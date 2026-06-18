@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web-mvc")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
     // LangChain4J core + OpenAI provider
     implementation("dev.langchain4j:langchain4j:1.0.0")
