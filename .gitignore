@@ -1,0 +1,5 @@
+/build/**/*
+**/*.class
+/.gradle/9.3.0/executionHistory/executionHistory.bin
+/.gradle/*
+.idea/*

@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+app:
+  openai:
+    api-key: sdf833.sdfg0
+    endpoint: https://wingman.nimbusplane.io/v1
+    model-name: wingman
+    max-tokens: 4096
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    try-it-out-enabled: true
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    com.example: DEBUG
+    dev.langchain4j: INFO
