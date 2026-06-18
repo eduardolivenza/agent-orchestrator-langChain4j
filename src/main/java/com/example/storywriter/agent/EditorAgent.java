@@ -1,11 +1,13 @@
 package com.example.storywriter.agent;
 
+import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 public interface EditorAgent {
 
+    @Agent(description = "Rewrites and improves a story based on critique feedback", outputKey = "story")
     @SystemMessage("""
             You are a professional story editor. Your job is to rewrite a story to address
             critical feedback while preserving the author's original vision and voice.

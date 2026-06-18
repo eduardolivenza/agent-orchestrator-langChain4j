@@ -20,9 +20,10 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
-    // LangChain4J core + OpenAI provider
-    implementation("dev.langchain4j:langchain4j:1.0.0")
-    implementation("dev.langchain4j:langchain4j-open-ai:1.0.0")
+    // LangChain4J core + OpenAI provider + AgenticScope
+    implementation("dev.langchain4j:langchain4j:1.16.3")
+    implementation("dev.langchain4j:langchain4j-open-ai:1.16.3")
+    implementation("dev.langchain4j:langchain4j-agentic:1.16.3-beta26")
 
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 

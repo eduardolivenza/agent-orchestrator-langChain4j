@@ -2,14 +2,12 @@ package com.example.storywriter.config;
 
 import com.example.storywriter.agent.CriticAgent;
 import com.example.storywriter.agent.EditorAgent;
-import com.example.storywriter.agent.OrchestratorAgent;
 import com.example.storywriter.agent.PlotAgent;
 import com.example.storywriter.agent.WriterAgent;
-import com.example.storywriter.tools.StoryAgentTools;
-import dev.langchain4j.memory.chat.MessageWindowChatMemory;
+import dev.langchain4j.agentic.AgenticServices;
+import dev.langchain4j.agentic.UntypedAgent;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
-import dev.langchain4j.service.AiServices;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,55 +31,48 @@ public class AgentConfig {
     }
 
     // ------------------------------------------------------------------ sub-agents
-    // Each worker agent is a stateless AiService — no shared memory needed.
 
     @Bean
     public PlotAgent plotAgent(ChatModel model) {
-        return AiServices.builder(PlotAgent.class)
+        return AgenticServices.agentBuilder(PlotAgent.class)
                 .chatModel(model)
                 .build();
     }
 
     @Bean
     public WriterAgent writerAgent(ChatModel model) {
-        return AiServices.builder(WriterAgent.class)
+        return AgenticServices.agentBuilder(WriterAgent.class)
                 .chatModel(model)
                 .build();
     }
 
     @Bean
     public CriticAgent criticAgent(ChatModel model) {
-        return AiServices.builder(CriticAgent.class)
+        return AgenticServices.agentBuilder(CriticAgent.class)
                 .chatModel(model)
                 .build();
     }
 
     @Bean
     public EditorAgent editorAgent(ChatModel model) {
-        return AiServices.builder(EditorAgent.class)
+        return AgenticServices.agentBuilder(EditorAgent.class)
                 .chatModel(model)
                 .build();
     }
 
-    // ------------------------------------------------------------------ tools
+    // ------------------------------------------------------------------ pipeline
+    // Deterministic sequence: Plot → Write → Critique → Edit
+    // Each agent reads its inputs from AgenticScope by @V key and writes its
+    // output back under the outputKey declared in its @Agent annotation.
 
     @Bean
-    public StoryAgentTools storyAgentTools(PlotAgent plotAgent, WriterAgent writerAgent,
-                                           CriticAgent criticAgent, EditorAgent editorAgent) {
-        return new StoryAgentTools(plotAgent, writerAgent, criticAgent, editorAgent);
-    }
-
-    // ------------------------------------------------------------------ orchestrator
-    // The orchestrator gets a chat memory so it can track which tools it already
-    // called within a single story-creation session.
-
-    @Bean
-    public OrchestratorAgent orchestratorAgent(ChatModel model,
-                                               StoryAgentTools storyAgentTools) {
-        return AiServices.builder(OrchestratorAgent.class)
-                .chatModel(model)
-                .tools(storyAgentTools)
-                .chatMemory(MessageWindowChatMemory.withMaxMessages(30))
+    public UntypedAgent storyPipeline(PlotAgent plotAgent, WriterAgent writerAgent,
+                                      CriticAgent criticAgent, EditorAgent editorAgent,
+                                      AgentTracingListener tracingListener) {
+        return AgenticServices.sequenceBuilder()
+                .subAgents(plotAgent, writerAgent, criticAgent, editorAgent)
+                .outputKey("story")
+                .listener(tracingListener)
                 .build();
     }
 }

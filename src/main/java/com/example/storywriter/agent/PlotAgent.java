@@ -1,11 +1,13 @@
 package com.example.storywriter.agent;
 
+import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 public interface PlotAgent {
 
+    @Agent(description = "Creates a detailed plot outline for the given topic", outputKey = "plot")
     @SystemMessage("""
             You are a creative story architect. Given a topic or premise, produce a compelling,
             well-structured plot outline that includes:

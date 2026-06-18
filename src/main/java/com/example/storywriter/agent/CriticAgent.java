@@ -1,11 +1,13 @@
 package com.example.storywriter.agent;
 
+import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
 
 public interface CriticAgent {
 
+    @Agent(description = "Critiques a story and provides actionable feedback", outputKey = "critique")
     @SystemMessage("""
             You are a professional literary critic and editor. Analyse stories with honesty
             and precision.
