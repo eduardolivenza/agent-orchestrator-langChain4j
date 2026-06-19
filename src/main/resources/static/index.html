@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Story Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ground:    #0B1D35;
+      --text:      #E8E2D6;
+      --accent:    #C8832A;
+      --accent-2:  #8FB8D4;
+      --surface:   #F5EFE3;
+      --ink:       #1C1208;
+      --ink-2:     #2C2010;
+      --muted:     #6B7A8D;
+      --border:    rgba(232, 226, 214, 0.13);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--ground);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3.5rem 1.5rem 7rem;
+    }
+
+    /* ── Header ──────────────────────────────────────────── */
+    .site-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .site-header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .site-header p {
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* ── Form card ───────────────────────────────────────── */
+    .form-card {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2.25rem;
+    }
+
+    .field + .field { margin-top: 1.25rem; }
+
+    label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+      margin-bottom: 0.45rem;
+    }
+
+    label .optional {
+      font-weight: 400;
+      opacity: 0.5;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(232, 226, 214, 0.18);
+      border-radius: 3px;
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.9375rem;
+      padding: 0.75rem 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+      resize: vertical;
+    }
+
+    textarea { min-height: 96px; }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+
+    textarea::placeholder, input::placeholder {
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    .btn-generate {
+      margin-top: 1.75rem;
+      width: 100%;
+      padding: 0.875rem 2rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 3px;
+      color: #fff;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-generate:hover:not(:disabled) { opacity: 0.88; }
+    .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-hint {
+      text-align: center;
+      margin-top: 0.6rem;
+      font-size: 0.7rem;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    /* ── Pipeline loader ─────────────────────────────────── */
+    .pipeline {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 2.75rem;
+    }
+
+    .pipeline.visible { display: block; }
+
+    .pipeline-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+
+    .pipeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0.25;
+      transition: opacity 0.35s ease;
+    }
+
+    .step.active { opacity: 1; }
+    .step.done   { opacity: 0.5; }
+
+    .step-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .step.active .step-dot {
+      background: var(--accent);
+      animation: glow 1.5s ease-in-out infinite;
+    }
+
+    .step.done .step-dot { background: var(--accent-2); }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 0 0 transparent; }
+      50%       { box-shadow: 0 0 0 4px rgba(200, 131, 42, 0.3); }
+    }
+
+    .step-text {
+      font-size: 0.875rem;
+      color: var(--text);
+    }
+
+    /* ── Error ───────────────────────────────────────────── */
+    .error-box {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      margin-top: 2rem;
+      padding: 1.125rem 1.5rem;
+      background: rgba(220, 38, 38, 0.08);
+      border: 1px solid rgba(220, 38, 38, 0.28);
+      border-radius: 3px;
+    }
+
+    .error-box.visible { display: block; }
+
+    .error-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #FCA5A5;
+      margin-bottom: 0.25rem;
+    }
+
+    .error-detail {
+      font-size: 0.8125rem;
+      color: rgba(252, 165, 165, 0.75);
+    }
+
+    /* ── Story card ──────────────────────────────────────── */
+    .story-card {
+      display: none;
+      width: 100%;
+      max-width: 700px;
+      background: var(--surface);
+      border-radius: 2px;
+      padding: clamp(2.5rem, 8vw, 4.5rem) clamp(2rem, 8vw, 5rem);
+      margin-top: 4rem;
+      color: var(--ink);
+    }
+
+    .story-card.visible { display: block; }
+
+    .story-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9A8C7A;
+    }
+
+    .story-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 2rem;
+    }
+
+    .story-rule {
+      border: none;
+      border-top: 1px solid #D9CEBC;
+      margin: 0 0 2.5rem;
+      width: 3.5rem;
+    }
+
+    .story-body {
+      font-family: 'Crimson Pro', Georgia, serif;
+      font-size: clamp(1.0625rem, 2.3vw, 1.2rem);
+      line-height: 1.85;
+      color: var(--ink-2);
+    }
+
+    .story-body p + p { margin-top: 1.3em; }
+
+    /* Drop-cap: the aesthetic risk — makes AI output feel like a published piece */
+    .story-body p:first-of-type::first-letter {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3.4em;
+      font-weight: 700;
+      float: left;
+      line-height: 0.72;
+      margin-right: 0.07em;
+      margin-top: 0.09em;
+      color: var(--accent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .step-dot { animation: none !important; }
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <h1>Story Generator</h1>
+    <p>Multi-agent &middot; LangChain4j</p>
+  </header>
+
+  <div class="form-card">
+    <div class="field">
+      <label for="topic">Topic</label>
+      <textarea id="topic" placeholder="A lighthouse keeper who discovers the fog is alive" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <label for="genre">Genre <span class="optional">(optional)</span></label>
+      <input id="genre" type="text" placeholder="mystery, sci-fi, horror, romance&hellip;">
+    </div>
+    <button class="btn-generate" id="generateBtn" onclick="generate()">Generate Story</button>
+    <p class="btn-hint">&#8984;&#8617; &nbsp;or&nbsp; Ctrl+Enter</p>
+  </div>
+
+  <div class="pipeline" id="pipeline">
+    <div class="pipeline-label">Agents at work</div>
+    <div class="pipeline-steps">
+      <div class="step" id="step-0"><div class="step-dot"></div><span class="step-text">Generating plot outline</span></div>
+      <div class="step" id="step-1"><div class="step-dot"></div><span class="step-text">Writing two drafts in parallel</span></div>
+      <div class="step" id="step-2"><div class="step-dot"></div><span class="step-text">Selecting the best draft</span></div>
+      <div class="step" id="step-3"><div class="step-dot"></div><span class="step-text">Critiquing &amp; revising</span></div>
+      <div class="step" id="step-4"><div class="step-dot"></div><span class="step-text">Final editorial polish</span></div>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox">
+    <div class="error-title" id="errorTitle"></div>
+    <div class="error-detail" id="errorDetail"></div>
+  </div>
+
+  <div class="story-card" id="storyCard">
+    <div class="story-meta">
+      <span id="metaTopic"></span>
+      <span id="metaTime"></span>
+    </div>
+    <h2 class="story-title" id="storyTitle"></h2>
+    <hr class="story-rule">
+    <div class="story-body" id="storyBody"></div>
+  </div>
+
+  <script>
+    // Estimated step durations (ms) — purely for progress display during the blocking call
+    const STEP_TIMINGS = [0, 13000, 35000, 52000, 78000];
+    let stepTimers = [];
+    let currentStep = -1;
+
+    function activateStep(i) {
+      if (currentStep >= 0) {
+        const prev = document.getElementById('step-' + currentStep);
+        prev.classList.remove('active');
+        prev.classList.add('done');
+      }
+      currentStep = i;
+      document.getElementById('step-' + i).classList.add('active');
+    }
+
+    function startPipeline() {
+      currentStep = -1;
+      for (let i = 0; i < 5; i++) {
+        document.getElementById('step-' + i).classList.remove('active', 'done');
+      }
+      document.getElementById('pipeline').classList.add('visible');
+      STEP_TIMINGS.forEach((t, i) => {
+        stepTimers.push(setTimeout(() => activateStep(i), t));
+      });
+    }
+
+    function stopPipeline() {
+      stepTimers.forEach(clearTimeout);
+      stepTimers = [];
+      for (let i = 0; i < 5; i++) {
+        const el = document.getElementById('step-' + i);
+        el.classList.remove('active');
+        el.classList.add('done');
+        el.style.opacity = '0.45';
+      }
+    }
+
+    function parseStory(text) {
+      const lines = text.trim().split('\n');
+      let i = 0;
+      while (i < lines.length && !lines[i].trim()) i++;
+      const title = lines[i] ? lines[i].trim().replace(/^#+\s*/, '') : '';
+      i++;
+      while (i < lines.length && !lines[i].trim()) i++;
+      return { title, body: lines.slice(i).join('\n') };
+    }
+
+    function renderStory(result) {
+      const { title, body } = parseStory(result.story);
+
+      document.getElementById('metaTopic').textContent = result.topic;
+      document.getElementById('metaTime').textContent =
+        'Generated in ' + (result.processingTimeMs / 1000).toFixed(1) + 's';
+      document.getElementById('storyTitle').textContent = title || 'Untitled';
+
+      const bodyEl = document.getElementById('storyBody');
+      bodyEl.innerHTML = '';
+      body.split(/\n\n+/).filter(p => p.trim()).forEach(para => {
+        const p = document.createElement('p');
+        p.textContent = para.trim();
+        bodyEl.appendChild(p);
+      });
+
+      document.getElementById('storyCard').classList.add('visible');
+      setTimeout(() =>
+        document.getElementById('storyCard').scrollIntoView({ behavior: 'smooth', block: 'start' }),
+        60
+      );
+    }
+
+    async function generate() {
+      const topic  = document.getElementById('topic').value.trim();
+      const genre  = document.getElementById('genre').value.trim();
+      if (!topic) { document.getElementById('topic').focus(); return; }
+
+      document.getElementById('errorBox').classList.remove('visible');
+      document.getElementById('storyCard').classList.remove('visible');
+      document.getElementById('generateBtn').disabled = true;
+      startPipeline();
+
+      try {
+        const res = await fetch('/api/stories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic, ...(genre && { genre }) })
+        });
+
+        stopPipeline();
+        document.getElementById('pipeline').classList.remove('visible');
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          document.getElementById('errorTitle').textContent  = err.title  || 'Something went wrong';
+          document.getElementById('errorDetail').textContent = err.detail || 'Please try again.';
+          document.getElementById('errorBox').classList.add('visible');
+        } else {
+          renderStory(await res.json());
+        }
+      } catch (_) {
+        stopPipeline();
+        document.getElementById('pipeline').classList.remove('visible');
+        document.getElementById('errorTitle').textContent  = 'Connection error';
+        document.getElementById('errorDetail').textContent = 'Could not reach the story generator. Is the server running?';
+        document.getElementById('errorBox').classList.add('visible');
+      } finally {
+        document.getElementById('generateBtn').disabled = false;
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+    });
+  </script>
+</body>
+</html>
