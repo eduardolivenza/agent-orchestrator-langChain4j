@@ -1,7 +1,7 @@
 package com.example.storywriter.controller;
 
-import com.example.storywriter.model.StoryRequest;
-import com.example.storywriter.model.StoryResult;
+import com.example.storywriter.controller.model.StoryRequest;
+import com.example.storywriter.controller.model.StoryResult;
 import com.example.storywriter.service.StoryOrchestrationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

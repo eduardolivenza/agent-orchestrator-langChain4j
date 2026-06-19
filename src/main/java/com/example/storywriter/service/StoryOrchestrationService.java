@@ -1,7 +1,7 @@
 package com.example.storywriter.service;
 
-import com.example.storywriter.model.StoryRequest;
-import com.example.storywriter.model.StoryResult;
+import com.example.storywriter.controller.model.StoryRequest;
+import com.example.storywriter.controller.model.StoryResult;
 import dev.langchain4j.agentic.UntypedAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class StoryOrchestrationService {
         long start = System.currentTimeMillis();
         String story = (String) storyPipeline.invoke(Map.of("topic", topic));
         long elapsed = System.currentTimeMillis() - start;
-
+        log.info("Story result: {}", story);
         log.info("Story pipeline completed in {}ms", elapsed);
         return new StoryResult(request.topic(), story, elapsed);
     }

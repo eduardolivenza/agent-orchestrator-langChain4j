@@ -1,4 +1,4 @@
-package com.example.storywriter.model;
+package com.example.storywriter.controller.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

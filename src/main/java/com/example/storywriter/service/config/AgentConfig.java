@@ -1,9 +1,9 @@
-package com.example.storywriter.config;
+package com.example.storywriter.service.config;
 
-import com.example.storywriter.agent.CriticAgent;
-import com.example.storywriter.agent.EditorAgent;
-import com.example.storywriter.agent.PlotAgent;
-import com.example.storywriter.agent.WriterAgent;
+import com.example.storywriter.service.agent.CriticAgent;
+import com.example.storywriter.service.agent.EditorAgent;
+import com.example.storywriter.service.agent.PlotAgent;
+import com.example.storywriter.service.agent.WriterAgent;
 import dev.langchain4j.agentic.AgenticServices;
 import dev.langchain4j.agentic.UntypedAgent;
 import dev.langchain4j.model.chat.ChatModel;

@@ -1,4 +1,4 @@
-package com.example.storywriter.config;
+package com.example.storywriter.service.config;
 
 import dev.langchain4j.agentic.observability.AgentInvocationError;
 import dev.langchain4j.agentic.observability.AgentListener;

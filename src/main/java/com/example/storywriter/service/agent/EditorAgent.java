@@ -1,4 +1,4 @@
-package com.example.storywriter.agent;
+package com.example.storywriter.service.agent;
 
 import dev.langchain4j.agentic.Agent;
 import dev.langchain4j.service.SystemMessage;
