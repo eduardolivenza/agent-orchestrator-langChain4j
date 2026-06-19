@@ -377,27 +377,15 @@
       }
     }
 
-    function parseStory(text) {
-      const lines = text.trim().split('\n');
-      let i = 0;
-      while (i < lines.length && !lines[i].trim()) i++;
-      const title = lines[i] ? lines[i].trim().replace(/^#+\s*/, '') : '';
-      i++;
-      while (i < lines.length && !lines[i].trim()) i++;
-      return { title, body: lines.slice(i).join('\n') };
-    }
-
     function renderStory(result) {
-      const { title, body } = parseStory(result.story);
-
       document.getElementById('metaTopic').textContent = result.topic;
       document.getElementById('metaTime').textContent =
         'Generated in ' + (result.processingTimeMs / 1000).toFixed(1) + 's';
-      document.getElementById('storyTitle').textContent = title || 'Untitled';
+      document.getElementById('storyTitle').textContent = result.title || 'Untitled';
 
       const bodyEl = document.getElementById('storyBody');
       bodyEl.innerHTML = '';
-      body.split(/\n\n+/).filter(p => p.trim()).forEach(para => {
+      result.story.trim().split(/\n\n+/).filter(p => p.trim()).forEach(para => {
         const p = document.createElement('p');
         p.textContent = para.trim();
         bodyEl.appendChild(p);

@@ -26,6 +26,9 @@ public class StoryOrchestrationService {
     private static final int MAX_REVISIONS = 3;
     private static final Pattern SCORE_PATTERN =
             Pattern.compile("(?i)overall\\s+rating[:\\s]*([0-9]+)\\s*/\\s*10");
+    // Matches "**Title:** Foo", "Title: Foo", "## Title\nFoo", etc.
+    private static final Pattern TITLE_PATTERN =
+            Pattern.compile("(?im)^[#\\s*]*title[*\\s]*:?\\s*(.+)$");
 
     private final PlotAgent plotAgent;
     private final WriterAgent writerAgent;
@@ -52,11 +55,13 @@ public class StoryOrchestrationService {
         // 1. Plot (sequential — all else depends on it)
         log.info("[1/4] Generating plot outline...");
         String plot = plotAgent.createPlot(topic);
+        String title = extractTitleFromPlot(plot);
+        log.info("Title from plot: \"{}\"", title);
 
         // 2. Write two drafts in parallel, then let an agent pick the better one
         log.info("[2/4] Writing two drafts in parallel...");
-        var f1 = CompletableFuture.supplyAsync(() -> writerAgent.writeStory(plot), executor);
-        var f2 = CompletableFuture.supplyAsync(() -> writerAgent.writeStory(plot), executor);
+        var f1 = CompletableFuture.supplyAsync(() -> writerAgent.writeStory(title, plot), executor);
+        var f2 = CompletableFuture.supplyAsync(() -> writerAgent.writeStory(title, plot), executor);
         String draft1 = f1.join();
         String draft2 = f2.join();
 
@@ -89,7 +94,29 @@ public class StoryOrchestrationService {
 
         long elapsed = System.currentTimeMillis() - start;
         log.info("Story pipeline completed in {}ms", elapsed);
-        return new StoryResult(request.topic(), finalStory, elapsed);
+        return new StoryResult(request.topic(), title, stripLeadingTitle(finalStory, title), elapsed);
+    }
+
+    private String extractTitleFromPlot(String plot) {
+        Matcher m = TITLE_PATTERN.matcher(plot);
+        if (m.find()) {
+            String title = m.group(1).trim().replaceAll("[*_#]", "").trim();
+            if (!title.isBlank()) return title;
+        }
+        log.warn("Could not extract title from plot — using 'Untitled'");
+        return "Untitled";
+    }
+
+    // Removes the title line if the LLM included it anyway despite instructions
+    private String stripLeadingTitle(String story, String title) {
+        String[] lines = story.strip().split("\n", 2);
+        if (lines.length > 0) {
+            String firstLine = lines[0].trim().replaceAll("[*_#]", "").trim();
+            if (firstLine.equalsIgnoreCase(title)) {
+                return lines.length > 1 ? lines[1].strip() : "";
+            }
+        }
+        return story.strip();
     }
 
     private int extractScore(String critique) {

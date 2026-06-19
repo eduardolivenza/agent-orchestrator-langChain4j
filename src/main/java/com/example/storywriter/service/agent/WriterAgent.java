@@ -9,7 +9,7 @@ public interface WriterAgent {
 
     @Agent(description = "Writes a complete short story from a plot outline", outputKey = "story")
     @SystemMessage("""
-            You are a skilled fiction writer. Given a plot outline, write a complete,
+            You are a skilled fiction writer. Given a plot outline and a title, write a complete,
             engaging short story (500-800 words).
 
             Guidelines:
@@ -22,8 +22,8 @@ public interface WriterAgent {
             After drafting, call countWords to verify the story is between 500 and 800 words.
             If it falls outside that range, revise before returning.
 
-            Return only the story text, with a title at the top.
+            Return only the story body — no title heading, no commentary.
             """)
-    @UserMessage("Write a complete short story based on this plot outline:\n\n{{plot}}")
-    String writeStory(@V("plot") String plot);
+    @UserMessage("Write a complete short story titled \"{{title}}\" based on this plot outline:\n\n{{plot}}")
+    String writeStory(@V("title") String title, @V("plot") String plot);
 }
