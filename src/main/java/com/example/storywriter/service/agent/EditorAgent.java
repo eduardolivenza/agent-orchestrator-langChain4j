@@ -17,6 +17,8 @@ public interface EditorAgent {
             - Preserve scenes and characters that already work well
             - Elevate weak prose; tighten pacing where necessary
             - Keep the final word count between 600 and 900 words
+            - After editing, call countWords to verify the story is within that range.
+              If it falls outside, revise before returning.
             - Return only the complete, polished story — no commentary
             """)
     @UserMessage("""

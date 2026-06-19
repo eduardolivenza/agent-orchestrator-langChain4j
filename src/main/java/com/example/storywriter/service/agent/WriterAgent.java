@@ -19,6 +19,9 @@ public interface WriterAgent {
             - Follow classic narrative structure: hook, rising tension, climax, resolution
             - Make the opening line unforgettable
 
+            After drafting, call countWords to verify the story is between 500 and 800 words.
+            If it falls outside that range, revise before returning.
+
             Return only the story text, with a title at the top.
             """)
     @UserMessage("Write a complete short story based on this plot outline:\n\n{{plot}}")

@@ -7,6 +7,8 @@ import com.example.storywriter.service.agent.WriterAgent;
 import com.example.storywriter.service.guardrail.PlotStructureGuardrail;
 import com.example.storywriter.service.guardrail.TopicLengthGuardrail;
 import com.example.storywriter.service.tools.GenreConventionsTool;
+import com.example.storywriter.service.tools.ReadabilityScoreTool;
+import com.example.storywriter.service.tools.WordCountTool;
 import dev.langchain4j.agentic.AgenticServices;
 import dev.langchain4j.agentic.UntypedAgent;
 import dev.langchain4j.model.chat.ChatModel;
@@ -46,23 +48,26 @@ public class AgentConfig {
     }
 
     @Bean
-    public WriterAgent writerAgent(ChatModel model) {
+    public WriterAgent writerAgent(ChatModel model, WordCountTool wordCountTool) {
         return AgenticServices.agentBuilder(WriterAgent.class)
                 .chatModel(model)
+                .tools(wordCountTool)
                 .build();
     }
 
     @Bean
-    public CriticAgent criticAgent(ChatModel model) {
+    public CriticAgent criticAgent(ChatModel model, ReadabilityScoreTool readabilityScoreTool) {
         return AgenticServices.agentBuilder(CriticAgent.class)
                 .chatModel(model)
+                .tools(readabilityScoreTool)
                 .build();
     }
 
     @Bean
-    public EditorAgent editorAgent(ChatModel model) {
+    public EditorAgent editorAgent(ChatModel model, WordCountTool wordCountTool) {
         return AgenticServices.agentBuilder(EditorAgent.class)
                 .chatModel(model)
+                .tools(wordCountTool)
                 .build();
     }
 
