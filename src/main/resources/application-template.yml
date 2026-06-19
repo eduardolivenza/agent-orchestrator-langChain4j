@@ -3,7 +3,7 @@ server:
 
 app:
   openai:
-    api-key: sdf833.sdfg0
+    api-key: {API_KEY}
     endpoint: https://wingman.nimbusplane.io/v1
     model-name: wingman
     max-tokens: 4096
