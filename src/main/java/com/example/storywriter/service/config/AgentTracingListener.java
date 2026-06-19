@@ -24,13 +24,13 @@ public class AgentTracingListener implements AgentListener {
 
     @Override
     public void beforeAgentInvocation(AgentRequest request) {
-        startTimes.put(request.agentId(), System.currentTimeMillis());
+        startTimes.put(invocationKey(request.agentId()), System.currentTimeMillis());
         log.info("[Agent] --> {} starting  (inputs: {})", request.agentName(), request.inputs().keySet());
     }
 
     @Override
     public void afterAgentInvocation(AgentResponse response) {
-        long elapsed = System.currentTimeMillis() - startTimes.remove(response.agentId());
+        long elapsed = System.currentTimeMillis() - startTimes.remove(invocationKey(response.agentId()));
         String outputSummary = response.output() instanceof String s
                 ? s.length() + " chars"
                 : String.valueOf(response.output());
@@ -49,7 +49,13 @@ public class AgentTracingListener implements AgentListener {
 
     @Override
     public void onAgentInvocationError(AgentInvocationError error) {
-        startTimes.remove(error.agentId());
+        startTimes.remove(invocationKey(error.agentId()));
         log.error("[Agent] ✗ {} failed: {}", error.agentName(), error.error().getMessage(), error.error());
+    }
+
+    // Combines agent ID with the current thread ID so that two parallel calls to the
+    // same agent instance each get their own slot in the map.
+    private static String invocationKey(String agentId) {
+        return agentId + "@" + Thread.currentThread().threadId();
     }
 }
