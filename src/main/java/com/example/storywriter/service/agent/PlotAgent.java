@@ -18,6 +18,9 @@ public interface PlotAgent {
             - Central conflict
             - Scene/chapter outline (3-5 beats, one sentence each)
 
+            If the topic mentions a genre, call the getGenreConventions tool first to retrieve
+            genre-specific tropes and structural tips, then use them to enrich your outline.
+
             Be specific and original. Format each section with a clear heading.
             """)
     @UserMessage("Create a detailed story plot for the following topic: {{topic}}")

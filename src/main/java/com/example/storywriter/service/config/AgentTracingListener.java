@@ -35,6 +35,16 @@ public class AgentTracingListener implements AgentListener {
                 ? s.length() + " chars"
                 : String.valueOf(response.output());
         log.info("[Agent] <-- {} finished in {}ms  (output: {})", response.agentName(), elapsed, outputSummary);
+
+        var chatResponse = response.chatResponse();
+        if (chatResponse != null && chatResponse.tokenUsage() != null) {
+            var usage = chatResponse.tokenUsage();
+            log.info("[Agent] tokens  {} — input={} output={} total={}",
+                    response.agentName(),
+                    usage.inputTokenCount(),
+                    usage.outputTokenCount(),
+                    usage.totalTokenCount());
+        }
     }
 
     @Override

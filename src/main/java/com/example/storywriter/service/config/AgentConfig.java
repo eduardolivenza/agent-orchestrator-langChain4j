@@ -4,6 +4,9 @@ import com.example.storywriter.service.agent.CriticAgent;
 import com.example.storywriter.service.agent.EditorAgent;
 import com.example.storywriter.service.agent.PlotAgent;
 import com.example.storywriter.service.agent.WriterAgent;
+import com.example.storywriter.service.guardrail.PlotStructureGuardrail;
+import com.example.storywriter.service.guardrail.TopicLengthGuardrail;
+import com.example.storywriter.service.tools.GenreConventionsTool;
 import dev.langchain4j.agentic.AgenticServices;
 import dev.langchain4j.agentic.UntypedAgent;
 import dev.langchain4j.model.chat.ChatModel;
@@ -21,7 +24,6 @@ public class AgentConfig {
             @Value("${app.openai.endpoint}") String endpoint,
             @Value("${app.openai.model-name}") String modelName,
             @Value("${app.openai.max-tokens}") int maxTokens) {
-
         return OpenAiChatModel.builder()
                 .apiKey(apiKey)
                 .baseUrl(endpoint)
@@ -30,12 +32,16 @@ public class AgentConfig {
                 .build();
     }
 
-    // ------------------------------------------------------------------ sub-agents
-
     @Bean
-    public PlotAgent plotAgent(ChatModel model) {
+    public PlotAgent plotAgent(ChatModel model,
+                               TopicLengthGuardrail topicLengthGuardrail,
+                               PlotStructureGuardrail plotStructureGuardrail,
+                               GenreConventionsTool genreConventionsTool) {
         return AgenticServices.agentBuilder(PlotAgent.class)
                 .chatModel(model)
+                .inputGuardrails(topicLengthGuardrail)
+                .outputGuardrails(plotStructureGuardrail)
+                .tools(genreConventionsTool)
                 .build();
     }
 
